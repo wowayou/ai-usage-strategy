@@ -1,0 +1,55 @@
+# --- Secrets & credentials (highest priority) ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.*
+secrets.*
+
+# --- Local AI agent state ---
+# Handoff snapshots may contain work-in-progress context / secrets.
+# Commit explicitly when you want to share a snapshot as an example.
+.claude/handoffs/
+.claude/settings.local.json
+.claude/.cache/
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Editors / IDEs ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# --- Logs ---
+*.log
+logs/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+dist/
+build/
+*.egg-info/
+
+# --- Node / TypeScript ---
+node_modules/
+.next/
+out/
+.turbo/
+.cache/
+
+# --- Misc ---
+tmp/
+*.tmp
