@@ -172,6 +172,7 @@ For "unstable + slow" providers:
 - **Circuit breaker**: trip when failure rate ≥ 50% in a 60s window; OPEN for 30s
 - **Routing priority**: [TBD: primary → fallback#1 → fallback#2 with specific models]
 - **On every degradation**: preserve request ID, log switch timestamp, write a §3 snapshot
+- **Reasoning effort**: prefer a higher effort tier when the upstream is unstable — every retry is expensive, so trade single-call latency for fewer reruns. Reserve `low` / `minimal` for deterministic, near-zero-retry-cost work (formatting, schema fills, deterministic transforms). For Claude Code, the keywords `think` / `think harder` / `ultrathink` map to roughly 4k / 10k / 32k thinking-token budgets — they are real budget tiers, not hints.
 
 ---
 

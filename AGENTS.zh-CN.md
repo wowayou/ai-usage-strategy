@@ -173,6 +173,7 @@ def fetch_user(id):
 - **熔断**：60s 窗口内失败率 ≥50% 触发，OPEN 30s
 - **路由优先级**：[待补充：主→备1→备2 的具体模型]
 - **降级时务必**：保留请求 ID、记录切换时间戳、按 §3 写快照
+- **推理 effort**：上游不稳定时优先选高 effort 档——每次重试代价高，宁可单次慢些也要减少返工次数。`low` / `minimal` 仅留给确定性高、重试成本接近零的任务（格式化、schema 填充、确定性转换）。Claude Code 用户可用 `think` / `think harder` / `ultrathink` 关键词触发约 4k / 10k / 32k 的 thinking token budget——这是真实生效的预算档位，不是语气词。
 
 ---
 
