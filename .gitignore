@@ -9,8 +9,12 @@ secrets.*
 
 # --- Local AI agent state ---
 # Handoff snapshots may contain work-in-progress context / secrets.
-# Commit explicitly when you want to share a snapshot as an example.
-.claude/handoffs/
+# We ignore all of them BUT keep EXAMPLE.md as a committed reference of the
+# §3.2 schema. NOTE: gitignore needs "/*" + a negation here — ignoring the
+# directory itself would prevent git from descending into it at all, so the
+# negation could not re-include EXAMPLE.md.
+.claude/handoffs/*
+!.claude/handoffs/EXAMPLE.md
 .claude/settings.local.json
 .claude/.cache/
 
