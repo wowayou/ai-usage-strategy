@@ -37,4 +37,4 @@ The full working contract lives in **[AGENTS.md](./AGENTS.md)** — that's the f
 
 ## License
 
-[TBD: choose a license — MIT recommended for documentation/strategy repos]
+Released under the [MIT License](./LICENSE). © 2026 the contributors.
