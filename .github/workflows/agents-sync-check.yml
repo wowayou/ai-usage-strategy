@@ -1,0 +1,98 @@
+name: AGENTS.md Sync Check
+
+# Verifies that AGENTS.md (English source of truth) and AGENTS.zh-CN.md
+# (Chinese mirror) never drift in section structure. See AGENTS.md §8.
+#
+# Trigger: any push to main or PR that touches either file.
+# Cost: a single ubuntu runner job, ~5 seconds. Zero external dependencies.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'AGENTS.md'
+      - 'AGENTS.zh-CN.md'
+      - '.github/workflows/agents-sync-check.yml'
+  pull_request:
+    paths:
+      - 'AGENTS.md'
+      - 'AGENTS.zh-CN.md'
+      - '.github/workflows/agents-sync-check.yml'
+
+jobs:
+  sync-check:
+    name: Verify EN / zh-CN structural parity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check both files exist
+        run: |
+          set -e
+          test -f AGENTS.md       || { echo "::error::AGENTS.md is missing"; exit 1; }
+          test -f AGENTS.zh-CN.md || { echo "::error::AGENTS.zh-CN.md is missing"; exit 1; }
+
+      - name: Verify cross-language links
+        run: |
+          set -e
+          # English file must point to the Chinese mirror
+          if ! grep -q "AGENTS.zh-CN.md" AGENTS.md; then
+            echo "::error file=AGENTS.md::Missing link to AGENTS.zh-CN.md (see header)"
+            exit 1
+          fi
+          # Chinese file must point to the English source
+          if ! grep -q "\./AGENTS.md" AGENTS.zh-CN.md; then
+            echo "::error file=AGENTS.zh-CN.md::Missing link to ./AGENTS.md (see header)"
+            exit 1
+          fi
+          echo "OK: cross-language links present in both files."
+
+      - name: Extract and compare section skeletons
+        run: |
+          set -e
+
+          # Extract the structural skeleton of a markdown file:
+          # all H2-H6 headings whose title starts with a numeric section
+          # tag (e.g. "## 3.", "### 3.1"). The title text is dropped — only
+          # the heading level (#'s) and section number remain. This way the
+          # check is language-agnostic and only fails when the numbered
+          # structure diverges.
+          extract_skeleton() {
+            grep -E '^#{2,6} +[0-9]' "$1" \
+              | sed -E 's/^(#{2,6}) +([0-9]+(\.[0-9]+)*).*/\1 \2/'
+          }
+
+          EN=$(extract_skeleton AGENTS.md)
+          ZH=$(extract_skeleton AGENTS.zh-CN.md)
+
+          echo "=== AGENTS.md numbered sections ==="
+          echo "$EN"
+          echo ""
+          echo "=== AGENTS.zh-CN.md numbered sections ==="
+          echo "$ZH"
+          echo ""
+
+          if [ "$EN" = "$ZH" ]; then
+            echo "OK: EN and zh-CN section skeletons match."
+            exit 0
+          fi
+
+          echo "::error::Section structure diverged between AGENTS.md and AGENTS.zh-CN.md"
+          echo ""
+          echo "--- Diff (EN vs zh-CN) ---"
+          diff <(echo "$EN") <(echo "$ZH") || true
+          echo ""
+          echo "Fix: edit both files in the same commit so §0-§N numbering matches."
+          echo "See AGENTS.md §8 for the dual-language sync rule."
+          exit 1
+
+      - name: Soft length warning (informational only)
+        run: |
+          # AGENTS.md spec community guidance: keep under ~150 lines.
+          # We warn but do not fail — long files may be justified.
+          for f in AGENTS.md AGENTS.zh-CN.md; do
+            lines=$(wc -l < "$f")
+            if [ "$lines" -gt 200 ]; then
+              echo "::warning file=$f::$f is $lines lines (recommended <= 150). Consider splitting into subdirectory AGENTS.md files."
+            fi
+          done
